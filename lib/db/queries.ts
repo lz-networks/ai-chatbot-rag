@@ -16,6 +16,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import type { ArtifactKind } from "@/components/artifact";
 import type { VisibilityType } from "@/components/visibility-selector";
+import { generateEmbeddings } from "../ai/embedding";
 import { ChatSDKError } from "../errors";
 import { generateUUID } from "../utils";
 import {
@@ -23,7 +24,9 @@ import {
   chat,
   type DBMessage,
   document,
+  embedding,
   message,
+  resource,
   type Suggestion,
   stream,
   suggestion,
@@ -597,6 +600,31 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to get stream ids by chat id"
+    );
+  }
+}
+
+export async function createResource({ content }: { content: string }) {
+  try {
+    const [newResource] = await db
+      .insert(resource)
+      .values({ content, createdAt: new Date(), updatedAt: new Date() })
+      .returning();
+
+    const embeddings = await generateEmbeddings(content);
+    await db.insert(embedding).values(
+      embeddings.map((e) => ({
+        resourceId: newResource.id,
+        content: e.content,
+        embedding: e.embedding,
+      }))
+    );
+
+    return "Resource successfully created and embedded.";
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to create resource"
     );
   }
 }

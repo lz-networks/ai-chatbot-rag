@@ -13,7 +13,9 @@ import { auth, type UserType } from "@/app/(auth)/auth";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { getLanguageModel } from "@/lib/ai/providers";
+import { addResource } from "@/lib/ai/tools/add-resource";
 import { createDocument } from "@/lib/ai/tools/create-document";
+import { getKnowledge } from "@/lib/ai/tools/get-knowledge";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
@@ -148,6 +150,8 @@ export async function POST(request: Request) {
             ? []
             : [
                 "getWeather",
+                "getKnowledge",
+                ...(userType === "admin" ? (["addResource"] as const) : []),
                 "createDocument",
                 "updateDocument",
                 "requestSuggestions",
@@ -161,6 +165,8 @@ export async function POST(request: Request) {
             : undefined,
           tools: {
             getWeather,
+            getKnowledge,
+            addResource: addResource({ session }),
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({ session, dataStream }),

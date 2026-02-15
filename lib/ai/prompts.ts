@@ -37,6 +37,12 @@ Do not update document right after creating it. Wait for user feedback or reques
 - Never use for general questions or information requests
 `;
 
+export const ragPrompt = `
+You have access to a knowledge base via the \`getKnowledge\` tool. When users ask questions, use this tool to search for relevant information before answering. If the knowledge base has relevant information, use it to inform your response and cite it naturally. If no relevant information is found, answer based on your general knowledge.
+
+If you are an admin user, you also have access to the \`addResource\` tool. Use it to store information that the user explicitly asks you to remember or add to the knowledge base.
+`;
+
 export const regularPrompt = `You are a friendly assistant! Keep your responses concise and helpful.
 
 When asked to write, create, or help with something, just do it directly. Don't ask clarifying questions unless absolutely necessary - make reasonable assumptions and proceed with the task.`;
@@ -73,7 +79,7 @@ export const systemPrompt = ({
     return `${regularPrompt}\n\n${requestPrompt}`;
   }
 
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  return `${regularPrompt}\n\n${requestPrompt}\n\n${ragPrompt}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `
